@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本都道府県クイズ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>日本都道府県クイズ</h1>
+        <div class="score-board">
+            <span>正解: <span id="correct">0</span></span>
+            <span>不正解: <span id="incorrect">0</span></span>
+        </div>
+        <div class="question-box">
+            <h2 id="question">ここは何県ですか？</h2>
+        </div>
+        <div class="map-container">
+            <svg id="japan-map" viewBox="0 0 800 600"></svg>
+        </div>
+    </div>
+
+    <!-- ポップアップ -->
+    <div id="popup" class="popup hidden">
+        <div class="popup-content">
+            <h2 id="popup-title"></h2>
+            <p id="popup-message"></p>
+            <button id="next-button">次の問題</button>
+        </div>
+    </div>
+
+    <script src="prefectures.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
