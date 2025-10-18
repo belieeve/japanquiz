@@ -23,6 +23,7 @@ const popupMessage = document.getElementById('popup-message');
 const nextButton = document.getElementById('next-button');
 
 let ctx;
+let canvasSetup = false;
 
 // 初期化
 function init() {
@@ -41,14 +42,9 @@ function init() {
         resetGame();
     });
 
-    // 画像が読み込まれたら準備完了
-    if (mapImage.complete) {
-        setupCanvas();
-    } else {
-        mapImage.onload = function() {
-            setupCanvas();
-        };
-    }
+    // キャンバスのクリックイベントを一度だけ登録
+    clickCanvas.addEventListener('click', handleCanvasClick);
+    clickCanvas.addEventListener('touchstart', handleCanvasClick);
 }
 
 // 地方別ゲーム開始
@@ -63,14 +59,13 @@ function startRegionGame(region) {
     // タイトル設定
     regionTitle.textContent = regions[region].name;
 
-    // キャンバスを確実にセットアップ
-    if (!ctx || clickCanvas.width === 0) {
+    // 画面表示後にキャンバスをセットアップ
+    setTimeout(() => {
         setupCanvas();
-    }
-
-    // ゲーム開始
-    resetGame();
-    startNewQuestion();
+        // ゲーム開始
+        resetGame();
+        startNewQuestion();
+    }, 100);
 }
 
 // ゲームリセット
@@ -87,13 +82,22 @@ function resetGame() {
 
 // キャンバスのセットアップ
 function setupCanvas() {
-    clickCanvas.width = mapImage.width;
-    clickCanvas.height = mapImage.height;
+    // 画像の実際のサイズを取得
+    const imgWidth = mapImage.naturalWidth || mapImage.width;
+    const imgHeight = mapImage.naturalHeight || mapImage.height;
+
+    clickCanvas.width = imgWidth;
+    clickCanvas.height = imgHeight;
     ctx = clickCanvas.getContext('2d');
 
-    // キャンバスのクリックイベント
-    clickCanvas.addEventListener('click', handleCanvasClick);
-    clickCanvas.addEventListener('touchstart', handleCanvasClick);
+    canvasSetup = true;
+
+    console.log('キャンバスセットアップ完了:', {
+        width: clickCanvas.width,
+        height: clickCanvas.height,
+        imgNaturalWidth: mapImage.naturalWidth,
+        imgWidth: mapImage.width
+    });
 }
 
 // キャンバスクリックの処理
