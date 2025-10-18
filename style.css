@@ -30,6 +30,88 @@ h1 {
     font-size: clamp(1.3rem, 5vw, 2rem);
 }
 
+.hidden {
+    display: none !important;
+}
+
+/* 地方選択画面 */
+.subtitle {
+    text-align: center;
+    font-size: clamp(1rem, 3.5vw, 1.3rem);
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.region-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.region-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 25px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.region-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.region-btn:active {
+    transform: translateY(-2px);
+}
+
+.region-name {
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    font-weight: bold;
+}
+
+.region-count {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    opacity: 0.9;
+}
+
+/* ゲーム画面ヘッダー */
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    left: 0;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #e0e0e0;
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
 .score-board {
     display: flex;
     justify-content: space-around;

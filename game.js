@@ -3,8 +3,15 @@ let currentQuestion = null;
 let correctCount = 0;
 let incorrectCount = 0;
 let usedPrefectures = new Set();
+let selectedRegion = null;
+let regionPrefectures = [];
 
 // DOM要素
+const regionSelectScreen = document.getElementById('region-select');
+const gameScreen = document.getElementById('game-screen');
+const regionButtons = document.querySelectorAll('.region-btn');
+const backButton = document.getElementById('back-button');
+const regionTitle = document.getElementById('region-title');
 const mapImage = document.getElementById('japan-map');
 const clickCanvas = document.getElementById('click-canvas');
 const questionElement = document.getElementById('question');
@@ -19,16 +26,57 @@ let ctx;
 
 // 初期化
 function init() {
-    // 画像が読み込まれたら開始
-    mapImage.onload = function() {
-        setupCanvas();
-        startNewQuestion();
-    };
+    // 地方選択ボタンのイベント
+    regionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const region = btn.dataset.region;
+            startRegionGame(region);
+        });
+    });
 
-    // すでに読み込まれている場合
+    // 戻るボタン
+    backButton.addEventListener('click', () => {
+        gameScreen.classList.add('hidden');
+        regionSelectScreen.classList.remove('hidden');
+        resetGame();
+    });
+
+    // 画像が読み込まれたら準備完了
     if (mapImage.complete) {
         setupCanvas();
-        startNewQuestion();
+    } else {
+        mapImage.onload = function() {
+            setupCanvas();
+        };
+    }
+}
+
+// 地方別ゲーム開始
+function startRegionGame(region) {
+    selectedRegion = region;
+    regionPrefectures = prefectures.filter(p => p.region === region);
+
+    // 画面切り替え
+    regionSelectScreen.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+
+    // タイトル設定
+    regionTitle.textContent = regions[region].name;
+
+    // ゲーム開始
+    resetGame();
+    startNewQuestion();
+}
+
+// ゲームリセット
+function resetGame() {
+    correctCount = 0;
+    incorrectCount = 0;
+    usedPrefectures.clear();
+    correctElement.textContent = '0';
+    incorrectElement.textContent = '0';
+    if (ctx) {
+        ctx.clearRect(0, 0, clickCanvas.width, clickCanvas.height);
     }
 }
 
@@ -73,13 +121,22 @@ function handleCanvasClick(e) {
 
 // 新しい問題を開始
 function startNewQuestion() {
-    // すべての都道府県を使い切ったらリセット
-    if (usedPrefectures.size >= prefectures.length) {
+    if (!selectedRegion || regionPrefectures.length === 0) return;
+
+    // その地方の都道府県を使い切ったらリセット
+    if (usedPrefectures.size >= regionPrefectures.length) {
         usedPrefectures.clear();
     }
 
     // まだ使っていない都道府県をランダムに選択
-    let availablePrefectures = prefectures.filter(p => !usedPrefectures.has(p.id));
+    let availablePrefectures = regionPrefectures.filter(p => !usedPrefectures.has(p.id));
+
+    if (availablePrefectures.length === 0) {
+        // 全問正解！
+        showCompletionMessage();
+        return;
+    }
+
     currentQuestion = availablePrefectures[Math.floor(Math.random() * availablePrefectures.length)];
     usedPrefectures.add(currentQuestion.id);
 
@@ -90,6 +147,27 @@ function startNewQuestion() {
     if (ctx) {
         ctx.clearRect(0, 0, clickCanvas.width, clickCanvas.height);
     }
+}
+
+// 全問正解時のメッセージ
+function showCompletionMessage() {
+    popup.classList.remove('hidden');
+    popupTitle.textContent = 'おめでとう！';
+    popupTitle.className = 'correct-title';
+    popupMessage.textContent = `すべてせいかいしました！\nせいかい: ${correctCount}\nまちがい: ${incorrectCount}`;
+    nextButton.textContent = 'もどる';
+    nextButton.style.display = 'block';
+
+    nextButton.onclick = () => {
+        popup.classList.add('hidden');
+        gameScreen.classList.add('hidden');
+        regionSelectScreen.classList.remove('hidden');
+        nextButton.textContent = 'つぎのもんだい';
+        nextButton.onclick = () => {
+            popup.classList.add('hidden');
+            startNewQuestion();
+        };
+    };
 }
 
 // 都道府県がクリックされた時の処理
@@ -167,7 +245,7 @@ function showPopup(isCorrect, clickedName, correctName = null, continueUntilCorr
     }
 }
 
-// ポップアップを閉じて次の問題へ
+// 初期のnextButtonイベント
 nextButton.addEventListener('click', () => {
     popup.classList.add('hidden');
     startNewQuestion();

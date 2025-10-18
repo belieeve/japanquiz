@@ -7,8 +7,48 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <!-- 地方選択画面 -->
+    <div id="region-select" class="container">
         <h1>にほんとどうふけんクイズ</h1>
+        <p class="subtitle">どのちほうのもんだいにチャレンジする？</p>
+        <div class="region-grid">
+            <button class="region-btn" data-region="hokkaido_tohoku">
+                <span class="region-name">ほっかいどう・とうほく</span>
+                <span class="region-count">7けん</span>
+            </button>
+            <button class="region-btn" data-region="kanto">
+                <span class="region-name">かんとう</span>
+                <span class="region-count">7けん</span>
+            </button>
+            <button class="region-btn" data-region="chubu">
+                <span class="region-name">ちゅうぶ</span>
+                <span class="region-count">9けん</span>
+            </button>
+            <button class="region-btn" data-region="kinki">
+                <span class="region-name">きんき（かんさい）</span>
+                <span class="region-count">7けん</span>
+            </button>
+            <button class="region-btn" data-region="chugoku">
+                <span class="region-name">ちゅうごく</span>
+                <span class="region-count">5けん</span>
+            </button>
+            <button class="region-btn" data-region="shikoku">
+                <span class="region-name">しこく</span>
+                <span class="region-count">4けん</span>
+            </button>
+            <button class="region-btn" data-region="kyushu_okinawa">
+                <span class="region-name">きゅうしゅう・おきなわ</span>
+                <span class="region-count">8けん</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="game-screen" class="container hidden">
+        <div class="game-header">
+            <button id="back-button" class="back-btn">← もどる</button>
+            <h1 id="region-title"></h1>
+        </div>
         <div class="score-board">
             <span>せいかい: <span id="correct">0</span></span>
             <span>まちがい: <span id="incorrect">0</span></span>
