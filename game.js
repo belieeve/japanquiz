@@ -6,8 +6,7 @@ let usedPrefectures = new Set();
 
 // DOM要素
 const mapImage = document.getElementById('japan-map');
-const mapAreasElement = document.getElementById('map-areas');
-const overlayCanvas = document.getElementById('overlay-canvas');
+const clickCanvas = document.getElementById('click-canvas');
 const questionElement = document.getElementById('question');
 const correctElement = document.getElementById('correct');
 const incorrectElement = document.getElementById('incorrect');
@@ -23,45 +22,53 @@ function init() {
     // 画像が読み込まれたら開始
     mapImage.onload = function() {
         setupCanvas();
-        createImageMap();
         startNewQuestion();
     };
 
     // すでに読み込まれている場合
     if (mapImage.complete) {
         setupCanvas();
-        createImageMap();
         startNewQuestion();
     }
 }
 
 // キャンバスのセットアップ
 function setupCanvas() {
-    overlayCanvas.width = mapImage.width;
-    overlayCanvas.height = mapImage.height;
-    ctx = overlayCanvas.getContext('2d');
+    clickCanvas.width = mapImage.width;
+    clickCanvas.height = mapImage.height;
+    ctx = clickCanvas.getContext('2d');
+
+    // キャンバスのクリックイベント
+    clickCanvas.addEventListener('click', handleCanvasClick);
+    clickCanvas.addEventListener('touchstart', handleCanvasClick);
 }
 
-// 画像マップを作成
-function createImageMap() {
-    mapAreasElement.innerHTML = '';
+// キャンバスクリックの処理
+function handleCanvasClick(e) {
+    e.preventDefault();
 
-    prefectures.forEach(pref => {
-        const area = document.createElement('area');
-        area.setAttribute('shape', 'rect');
-        area.setAttribute('coords', pref.coords);
-        area.setAttribute('data-id', pref.id);
-        area.setAttribute('data-name', pref.name);
-        area.setAttribute('alt', pref.kanji);
+    const rect = clickCanvas.getBoundingClientRect();
+    const scaleX = clickCanvas.width / rect.width;
+    const scaleY = clickCanvas.height / rect.height;
 
-        // クリックイベント
-        area.addEventListener('click', (e) => {
-            e.preventDefault();
-            handlePrefectureClick(pref);
-        });
+    let x, y;
+    if (e.type === 'touchstart') {
+        x = (e.touches[0].clientX - rect.left) * scaleX;
+        y = (e.touches[0].clientY - rect.top) * scaleY;
+    } else {
+        x = (e.clientX - rect.left) * scaleX;
+        y = (e.clientY - rect.top) * scaleY;
+    }
 
-        mapAreasElement.appendChild(area);
+    // クリックされた都道府県を探す
+    const clickedPref = prefectures.find(pref => {
+        const coords = pref.coords.split(',').map(Number);
+        return x >= coords[0] && x <= coords[2] && y >= coords[1] && y <= coords[3];
     });
+
+    if (clickedPref) {
+        handlePrefectureClick(clickedPref);
+    }
 }
 
 // 新しい問題を開始
@@ -81,7 +88,7 @@ function startNewQuestion() {
 
     // キャンバスをクリア
     if (ctx) {
-        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        ctx.clearRect(0, 0, clickCanvas.width, clickCanvas.height);
     }
 }
 
@@ -111,7 +118,7 @@ function handlePrefectureClick(clickedPref) {
 
         // 1秒後に消す（正解するまで続けるため）
         setTimeout(() => {
-            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            ctx.clearRect(0, 0, clickCanvas.width, clickCanvas.height);
         }, 800);
 
         showPopup(false, clickedPref.name, currentQuestion.name, true);
