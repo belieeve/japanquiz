@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日本都道府県クイズ</title>
+    <title>にほんとどうふけんクイズ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>日本都道府県クイズ</h1>
+        <h1>にほんとどうふけんクイズ</h1>
         <div class="score-board">
-            <span>正解: <span id="correct">0</span></span>
-            <span>不正解: <span id="incorrect">0</span></span>
+            <span>せいかい: <span id="correct">0</span></span>
+            <span>まちがい: <span id="incorrect">0</span></span>
         </div>
         <div class="question-box">
-            <h2 id="question">ここは何県ですか？</h2>
+            <h2 id="question"></h2>
         </div>
         <div class="map-container">
-            <svg id="japan-map" viewBox="0 0 800 600"></svg>
+            <div style="position: relative; display: inline-block;">
+                <img src="tizu.jpg" alt="にほんちず" id="japan-map" usemap="#japan-map-areas">
+                <canvas id="overlay-canvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+                <map name="japan-map-areas" id="map-areas"></map>
+            </div>
         </div>
     </div>
 
@@ -26,7 +30,7 @@
         <div class="popup-content">
             <h2 id="popup-title"></h2>
             <p id="popup-message"></p>
-            <button id="next-button">次の問題</button>
+            <button id="next-button">つぎのもんだい</button>
         </div>
     </div>
 

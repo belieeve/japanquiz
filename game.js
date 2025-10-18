@@ -5,7 +5,9 @@ let incorrectCount = 0;
 let usedPrefectures = new Set();
 
 // DOM要素
-const mapSvg = document.getElementById('japan-map');
+const mapImage = document.getElementById('japan-map');
+const mapAreasElement = document.getElementById('map-areas');
+const overlayCanvas = document.getElementById('overlay-canvas');
 const questionElement = document.getElementById('question');
 const correctElement = document.getElementById('correct');
 const incorrectElement = document.getElementById('incorrect');
@@ -14,25 +16,51 @@ const popupTitle = document.getElementById('popup-title');
 const popupMessage = document.getElementById('popup-message');
 const nextButton = document.getElementById('next-button');
 
+let ctx;
+
 // 初期化
 function init() {
-    createMap();
-    startNewQuestion();
+    // 画像が読み込まれたら開始
+    mapImage.onload = function() {
+        setupCanvas();
+        createImageMap();
+        startNewQuestion();
+    };
+
+    // すでに読み込まれている場合
+    if (mapImage.complete) {
+        setupCanvas();
+        createImageMap();
+        startNewQuestion();
+    }
 }
 
-// SVG地図を作成
-function createMap() {
+// キャンバスのセットアップ
+function setupCanvas() {
+    overlayCanvas.width = mapImage.width;
+    overlayCanvas.height = mapImage.height;
+    ctx = overlayCanvas.getContext('2d');
+}
+
+// 画像マップを作成
+function createImageMap() {
+    mapAreasElement.innerHTML = '';
+
     prefectures.forEach(pref => {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', pref.path);
-        path.setAttribute('class', 'prefecture');
-        path.setAttribute('data-id', pref.id);
-        path.setAttribute('data-name', pref.name);
+        const area = document.createElement('area');
+        area.setAttribute('shape', 'rect');
+        area.setAttribute('coords', pref.coords);
+        area.setAttribute('data-id', pref.id);
+        area.setAttribute('data-name', pref.name);
+        area.setAttribute('alt', pref.kanji);
 
         // クリックイベント
-        path.addEventListener('click', () => handlePrefectureClick(pref));
+        area.addEventListener('click', (e) => {
+            e.preventDefault();
+            handlePrefectureClick(pref);
+        });
 
-        mapSvg.appendChild(path);
+        mapAreasElement.appendChild(area);
     });
 }
 
@@ -48,21 +76,18 @@ function startNewQuestion() {
     currentQuestion = availablePrefectures[Math.floor(Math.random() * availablePrefectures.length)];
     usedPrefectures.add(currentQuestion.id);
 
-    // 問題文を更新
-    questionElement.textContent = `${currentQuestion.name}はどこですか？`;
+    // 問題文を更新（ひらがな）
+    questionElement.textContent = `「${currentQuestion.name}」はどこですか？`;
 
-    // すべての都道府県をリセット
-    document.querySelectorAll('.prefecture').forEach(path => {
-        path.classList.remove('correct', 'incorrect');
-    });
+    // キャンバスをクリア
+    if (ctx) {
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    }
 }
 
 // 都道府県がクリックされた時の処理
 function handlePrefectureClick(clickedPref) {
     if (!currentQuestion) return;
-
-    const clickedPath = document.querySelector(`[data-id="${clickedPref.id}"]`);
-    const correctPath = document.querySelector(`[data-id="${currentQuestion.id}"]`);
 
     // 正解判定
     const isCorrect = clickedPref.id === currentQuestion.id;
@@ -72,33 +97,66 @@ function handlePrefectureClick(clickedPref) {
         correctCount++;
         correctElement.textContent = correctCount;
 
-        clickedPath.classList.add('correct');
+        // 正解エリアを緑で表示
+        highlightArea(clickedPref, '#4caf50');
 
         showPopup(true, clickedPref.name);
     } else {
-        // 不正解の場合
+        // 不正解の場合 - 正解するまで続ける
         incorrectCount++;
         incorrectElement.textContent = incorrectCount;
 
-        clickedPath.classList.add('incorrect');
-        correctPath.classList.add('correct');
+        // 不正解エリアを赤で一時表示
+        highlightArea(clickedPref, '#f44336');
 
-        showPopup(false, clickedPref.name, currentQuestion.name);
+        // 1秒後に消す（正解するまで続けるため）
+        setTimeout(() => {
+            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        }, 800);
+
+        showPopup(false, clickedPref.name, currentQuestion.name, true);
     }
 }
 
-// ポップアップを表示
-function showPopup(isCorrect, clickedName, correctName = null) {
-    popup.classList.remove('hidden');
+// エリアをハイライト表示
+function highlightArea(pref, color) {
+    const coords = pref.coords.split(',').map(Number);
+    const x = coords[0];
+    const y = coords[1];
+    const width = coords[2] - coords[0];
+    const height = coords[3] - coords[1];
 
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.4;
+    ctx.fillRect(x, y, width, height);
+    ctx.globalAlpha = 1.0;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, width, height);
+}
+
+// ポップアップを表示
+function showPopup(isCorrect, clickedName, correctName = null, continueUntilCorrect = false) {
     if (isCorrect) {
-        popupTitle.textContent = '正解！';
+        // 正解の場合のみポップアップを表示
+        popup.classList.remove('hidden');
+        popupTitle.textContent = 'せいかい！';
         popupTitle.className = 'correct-title';
-        popupMessage.textContent = `${clickedName}、正解です！`;
-    } else {
-        popupTitle.textContent = '不正解...';
+        popupMessage.textContent = `「${clickedName}」せいかいです！`;
+        nextButton.style.display = 'block';
+    } else if (continueUntilCorrect) {
+        // 不正解の場合は小さい通知のみ（ポップアップは表示しない）
+        popup.classList.remove('hidden');
+        popupTitle.textContent = 'ざんねん...';
         popupTitle.className = 'incorrect-title';
-        popupMessage.textContent = `${clickedName}ではありません。正解は${correctName}でした。`;
+        popupMessage.textContent = `「${clickedName}」ではありません。もういちどチャレンジ！`;
+        nextButton.style.display = 'none';
+
+        // 1秒後に自動的に閉じる
+        setTimeout(() => {
+            popup.classList.add('hidden');
+        }, 1500);
     }
 }
 

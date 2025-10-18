@@ -74,35 +74,26 @@ h1 {
 
 #japan-map {
     width: 100%;
-    max-width: 600px;
+    max-width: 1100px;
     height: auto;
-    touch-action: manipulation;
+    display: block;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.prefecture {
-    fill: #e0e0e0;
-    stroke: #fff;
-    stroke-width: 1;
+#overlay-canvas {
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+area {
     cursor: pointer;
-    transition: all 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
+    outline: none;
 }
 
-.prefecture:hover {
-    fill: #bdbdbd;
-    stroke-width: 2;
-}
-
-.prefecture:active {
-    fill: #9e9e9e;
-}
-
-.prefecture.correct {
-    fill: #4caf50 !important;
-}
-
-.prefecture.incorrect {
-    fill: #f44336 !important;
+area:focus {
+    outline: none;
 }
 
 /* ポップアップ */
