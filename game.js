@@ -63,6 +63,11 @@ function startRegionGame(region) {
     // タイトル設定
     regionTitle.textContent = regions[region].name;
 
+    // キャンバスを確実にセットアップ
+    if (!ctx || clickCanvas.width === 0) {
+        setupCanvas();
+    }
+
     // ゲーム開始
     resetGame();
     startNewQuestion();
@@ -95,6 +100,8 @@ function setupCanvas() {
 function handleCanvasClick(e) {
     e.preventDefault();
 
+    if (!selectedRegion) return; // ゲーム開始前は反応しない
+
     const rect = clickCanvas.getBoundingClientRect();
     const scaleX = clickCanvas.width / rect.width;
     const scaleY = clickCanvas.height / rect.height;
@@ -108,14 +115,22 @@ function handleCanvasClick(e) {
         y = (e.clientY - rect.top) * scaleY;
     }
 
+    console.log('クリック座標:', x, y, 'キャンバスサイズ:', clickCanvas.width, clickCanvas.height);
+
     // クリックされた都道府県を探す
     const clickedPref = prefectures.find(pref => {
         const coords = pref.coords.split(',').map(Number);
-        return x >= coords[0] && x <= coords[2] && y >= coords[1] && y <= coords[3];
+        const isInside = x >= coords[0] && x <= coords[2] && y >= coords[1] && y <= coords[3];
+        if (isInside) {
+            console.log('ヒット:', pref.name, coords);
+        }
+        return isInside;
     });
 
     if (clickedPref) {
         handlePrefectureClick(clickedPref);
+    } else {
+        console.log('どの都道府県にもヒットしませんでした');
     }
 }
 
